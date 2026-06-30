@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>บันทึกรายรับ-รายจ่ายกองกำลัง</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --field-dark:#232A1C;
+    --field-mid:#3C4A2A;
+    --field-olive:#5B6B3E;
+    --sage:#7E9A5C;
+    --khaki:#B9AE82;
+    --paper:#F2ECDA;
+    --paper-soft:#E8E0C8;
+    --ink:#211D14;
+    --ink-soft:#5C5746;
+    --gold:#B6892F;
+    --stamp-red:#8E3327;
+    --line:#C7BC97;
+    --radius:6px;
+    --shadow:0 10px 24px rgba(20,22,12,0.28);
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    margin:0;
+    font-family:'Sarabun',sans-serif;
+    background:
+      radial-gradient(ellipse at top, #303a21 0%, var(--field-dark) 55%, #181d12 100%);
+    color:var(--paper);
+    min-height:100vh;
+    padding:28px 16px 60px;
+  }
+
+  .wrap{ max-width:980px; margin:0 auto; }
+
+  /* ---------- Letterhead ---------- */
+  .letterhead{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:22px 26px;
+    border:1px solid rgba(182,137,47,0.45);
+    border-radius:var(--radius);
+    background:linear-gradient(180deg, rgba(60,74,42,0.55), rgba(35,42,28,0.55));
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+  }
+  .letterhead::before{
+    content:"";
+    position:absolute; inset:0;
+    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 14px);
+    pointer-events:none;
+  }
+  .seal{
+    flex:0 0 auto;
+    width:62px; height:62px;
+    border-radius:50%;
+    border:2px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    position:relative;
+    background:radial-gradient(circle at 35% 30%, #4a5a30, #232a1c 75%);
+  }
+  .seal::before{
+    content:"";
+    position:absolute; inset:6px;
+    border:1px dashed rgba(182,137,47,0.7);
+    border-radius:50%;
+  }
+  .seal-star{ color:var(--gold); font-size:22px; line-height:1; }
+  .letterhead-text{ position:relative; z-index:1; }
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.18em;
+    color:var(--khaki);
+    text-transform:uppercase;
+  }
+  h1{
+    margin:4px 0 2px;
+    font-size:26px;
+    font-weight:700;
+    color:var(--paper);
+    letter-spacing:.01em;
+  }
+  .sub{
+    font-size:13.5px;
+    color:var(--khaki);
+  }
+  .doc-id{
+    margin-left:auto;
+    text-align:right;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--khaki);
+    line-height:1.6;
+  }
+
+  /* ---------- Config notice ---------- */
+  .notice{
+    margin-top:14px;
+    padding:12px 16px;
+    border-radius:var(--radius);
+    border:1px solid rgba(142,51,39,0.6);
+    background:rgba(142,51,39,0.18);
+    color:#f1d8d2;
+    font-size:13.5px;
+    display:none;
+  }
+  .notice.show{ display:block; }
+  .notice code{
+    background:rgba(0,0,0,0.25);
+    padding:1px 6px;
+    border-radius:3px;
+    font-family:'JetBrains Mono',monospace;
+  }
+
+  /* ---------- Summary ledger plate ---------- */
+  .summary{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:12px;
+  }
+  .plate{
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    box-shadow:var(--shadow);
+    border-top:3px solid var(--field-olive);
+  }
+  .plate.expense{ border-top-color:var(--stamp-red); }
+  .plate.balance{ border-top-color:var(--gold); }
+  .plate-label{
+    font-size:12px;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .plate-value{
+    margin-top:6px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:24px;
+    font-weight:700;
+  }
+  .plate-value.expense{ color:var(--stamp-red); }
+  .plate-value.income{ color:#3F5A2A; }
+
+  /* ---------- Card / form ---------- */
+  .card{
+    margin-top:20px;
+    background:var(--paper);
+    color:var(--ink);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  .card-head{
+    background:var(--paper-soft);
+    padding:14px 20px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .card-head h2{
+    margin:0;
+    font-size:16px;
+    font-weight:700;
+    letter-spacing:.02em;
+  }
+  .card-head .tag{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:2px 8px;
+  }
+  .card-body{ padding:20px; }
+
+  form{ display:grid; gap:16px; }
+  .row2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:620px){ .row2{ grid-template-columns:1fr; } }
+
+  label{
+    display:block;
+    font-size:13px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  input[type=text], input[type=date], input[type=number]{
+    width:100%;
+    padding:11px 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    font-family:'Sarabun',sans-serif;
+    font-size:15px;
+    color:var(--ink);
+  }
+  input:focus{
+    outline:none;
+    border-color:var(--field-olive);
+    box-shadow:0 0 0 3px rgba(91,107,62,0.18);
+  }
+
+  .seg{
+    display:flex;
+    border:1px solid var(--line);
+    border-radius:4px;
+    overflow:hidden;
+  }
+  .seg button{
+    flex:1;
+    padding:11px 10px;
+    border:none;
+    background:#fff;
+    font-family:'Sarabun',sans-serif;
+    font-size:14.5px;
+    font-weight:600;
+    color:var(--ink-soft);
+    cursor:pointer;
+    transition:background .15s, color .15s;
+  }
+  .seg button + button{ border-left:1px solid var(--line); }
+  .seg button.active.income{ background:var(--field-olive); color:#fff; }
+  .seg button.active.expense{ background:var(--stamp-red); color:#fff; }
+
+  .file-drop{
+    border:1.5px dashed var(--line);
+    border-radius:6px;
+    padding:18px;
+    text-align:center;
+    cursor:pointer;
+    background:#fff;
+    transition:border-color .15s, background .15s;
+  }
+  .file-drop:hover{ border-color:var(--field-olive); }
+  .file-drop input{ display:none; }
+  .file-drop .hint{ font-size:12.5px; color:var(--ink-soft); margin-top:4px; }
+  .preview{
+    margin-top:12px;
+    display:none;
+    align-items:center;
+    gap:12px;
+  }
+  .preview.show{ display:flex; }
+  .preview img{
+    width:64px; height:64px; object-fit:cover;
+    border-radius:4px; border:1px solid var(--line);
+  }
+  .preview .fname{ font-size:12.5px; color:var(--ink-soft); word-break:break-all; }
+  .preview .remove{
+    margin-left:auto;
+    background:none; border:none; color:var(--stamp-red);
+    font-size:12.5px; cursor:pointer; text-decoration:underline;
+  }
+
+  .submit-btn{
+    justify-self:start;
+    padding:12px 28px;
+    border:none;
+    border-radius:4px;
+    background:var(--field-olive);
+    color:#fff;
+    font-family:'Sarabun',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    letter-spacing:.02em;
+    cursor:pointer;
+    transition:background .15s, transform .1s;
+  }
+  .submit-btn:hover{ background:#4c5a32; }
+  .submit-btn:active{ transform:translateY(1px); }
+  .submit-btn:disabled{ background:#a7a48b; cursor:not-allowed; }
+
+  .status-line{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    min-height:18px;
+  }
+  .status-line.ok{ color:#3F5A2A; }
+  .status-line.err{ color:var(--stamp-red); }
+
+  /* ---------- History table ---------- */
+  .table-wrap{ overflow-x:auto; }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:14px;
+  }
+  thead th{
+    text-align:left;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:10px 12px;
+    border-bottom:2px solid var(--field-olive);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:10px 12px;
+    border-bottom:1px solid var(--line);
+    vertical-align:middle;
+  }
+  tbody tr:hover{ background:rgba(91,107,62,0.06); }
+  td.amt{ font-family:'JetBrains Mono',monospace; text-align:right; white-space:nowrap; }
+  td.amt.income{ color:#3F5A2A; font-weight:600; }
+  td.amt.expense{ color:var(--stamp-red); font-weight:600; }
+  td.slip a{
+    display:inline-flex; align-items:center; gap:4px;
+    color:var(--field-olive); font-size:12.5px; text-decoration:none;
+    border:1px solid var(--line); border-radius:3px; padding:3px 8px;
+  }
+  td.slip a:hover{ border-color:var(--field-olive); }
+  .empty-row td{
+    text-align:center;
+    color:var(--ink-soft);
+    padding:26px 12px;
+    font-style:italic;
+  }
+
+  .refresh-btn{
+    background:none;
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:5px 12px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11.5px;
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .refresh-btn:hover{ border-color:var(--field-olive); color:var(--field-olive); }
+
+  /* ---------- Stamp toast ---------- */
+  .stamp-toast{
+    position:fixed;
+    bottom:26px; left:50%;
+    transform:translateX(-50%) scale(0.7) rotate(-8deg);
+    opacity:0;
+    background:var(--paper);
+    color:var(--field-olive);
+    border:3px solid var(--field-olive);
+    border-radius:8px;
+    padding:10px 26px;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:700;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:50;
+    box-shadow:var(--shadow);
+  }
+  .stamp-toast.show{
+    opacity:1;
+    transform:translateX(-50%) scale(1) rotate(-4deg);
+  }
+
+  footer{
+    text-align:center;
+    margin-top:26px;
+    font-size:11.5px;
+    color:rgba(242,236,218,0.45);
+    font-family:'JetBrains Mono',monospace;
+    letter-spacing:.05em;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="letterhead">
+    <div class="seal"><span class="seal-star">★</span></div>
+    <div class="letterhead-text">
+      <div class="eyebrow">บันทึกการเงินภาคสนาม · FIELD LEDGER</div>
+      <h1>บันทึกรายรับ-รายจ่ายกองกำลัง</h1>
+      <div class="sub">สำหรับใช้บันทึกร่วมกันภายในหน่วย — แนบหลักฐานสลิปการโอนทุกรายการ</div>
+    </div>
+    <div class="doc-id" id="docId">SHEET-LINK · —</div>
+  </div>
+
+  <div class="notice" id="configNotice">
+    ⚠ ยังไม่ได้เชื่อมต่อกับ Google Sheet — กรุณาใส่ลิงก์ Web App ในไฟล์นี้ที่ตัวแปร
+    <code>WEB_APP_URL</code> ในส่วนสคริปต์ด้านล่างของหน้านี้ก่อนเริ่มใช้งาน
+  </div>
+
+  <div class="summary">
+    <div class="plate">
+      <div class="plate-label">รวมรายรับ</div>
+      <div class="plate-value income" id="sumIncome">฿0.00</div>
+    </div>
+    <div class="plate expense">
+      <div class="plate-label">รวมรายจ่าย</div>
+      <div class="plate-value expense" id="sumExpense">฿0.00</div>
+    </div>
+    <div class="plate balance">
+      <div class="plate-label">คงเหลือสุทธิ</div>
+      <div class="plate-value" id="sumBalance">฿0.00</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>เพิ่มรายการบันทึก</h2>
+      <span class="tag">NEW ENTRY</span>
+    </div>
+    <div class="card-body">
+      <form id="entryForm">
+        <div class="row2">
+          <div>
+            <label for="fDate">วันที่</label>
+            <input type="date" id="fDate" required>
+          </div>
+          <div>
+            <label>ประเภทรายการ</label>
+            <div class="seg">
+              <button type="button" id="btnIncome" class="active income">รายรับ</button>
+              <button type="button" id="btnExpense" class="expense">รายจ่าย</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div>
+            <label for="fItem">รายการ</label>
+            <input type="text" id="fItem" placeholder="เช่น เบิกค่าน้ำมันลาดตระเวน" required>
+          </div>
+          <div>
+            <label for="fAmount">จำนวนเงิน (บาท)</label>
+            <input type="number" id="fAmount" min="0" step="0.01" placeholder="0.00" required>
+          </div>
+        </div>
+
+        <div>
+          <label>แนบภาพสลิปการโอนเงิน</label>
+          <div class="file-drop" id="dropZone">
+            <div>📎 แตะเพื่อเลือกภาพ หรือถ่ายภาพสลิป</div>
+            <div class="hint">รองรับ JPG / PNG — ใช้เป็นหลักฐานประกอบรายการ</div>
+            <input type="file" id="fSlip" accept="image/*" capture="environment">
+          </div>
+          <div class="preview" id="previewBox">
+            <img id="previewImg" alt="ตัวอย่างภาพสลิป">
+            <div class="fname" id="previewName"></div>
+            <button type="button" class="remove" id="removeSlip">นำออก</button>
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" class="submit-btn" id="submitBtn">บันทึกรายการ</button>
+          <div class="status-line" id="statusLine"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <h2>ประวัติรายการ</h2>
+      <button class="refresh-btn" id="refreshBtn">↻ โหลดข้อมูลล่าสุด</button>
+    </div>
+    <div class="card-body" style="padding-top:0;">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>วันที่</th>
+              <th>รายการ</th>
+              <th style="text-align:right;">รายรับ</th>
+              <th style="text-align:right;">รายจ่าย</th>
+              <th>สลิป</th>
+            </tr>
+          </thead>
+          <tbody id="recordsBody">
+            <tr class="empty-row"><td colspan="5">ยังไม่มีข้อมูล</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <footer>FIELD LEDGER SYSTEM · ข้อมูลถูกบันทึกลง Google Sheet ที่เชื่อมต่อไว้เท่านั้น</footer>
+</div>
+
+<div class="stamp-toast" id="stampToast">บันทึกแล้ว</div>
+
+<script>
+  // ====================================================================
+  // ตั้งค่าการเชื่อมต่อ: นำ Web App URL จาก Google Apps Script มาวางที่นี่
+  // ====================================================================
+  const WEB_APP_URL = ""; // <-- วางลิงก์ Web App ของ Apps Script ตรงนี้
+  // ====================================================================
+
+  const els = {
+    notice: document.getElementById('configNotice'),
+    docId: document.getElementById('docId'),
+    form: document.getElementById('entryForm'),
+    date: document.getElementById('fDate'),
+    item: document.getElementById('fItem'),
+    amount: document.getElementById('fAmount'),
+    btnIncome: document.getElementById('btnIncome'),
+    btnExpense: document.getElementById('btnExpense'),
+    dropZone: document.getElementById('dropZone'),
+    fileInput: document.getElementById('fSlip'),
+    previewBox: document.getElementById('previewBox'),
+    previewImg: document.getElementById('previewImg'),
+    previewName: document.getElementById('previewName'),
+    removeSlip: document.getElementById('removeSlip'),
+    submitBtn: document.getElementById('submitBtn'),
+    statusLine: document.getElementById('statusLine'),
+    sumIncome: document.getElementById('sumIncome'),
+    sumExpense: document.getElementById('sumExpense'),
+    sumBalance: document.getElementById('sumBalance'),
+    recordsBody: document.getElementById('recordsBody'),
+    refreshBtn: document.getElementById('refreshBtn'),
+    stampToast: document.getElementById('stampToast'),
+  };
+
+  let entryType = 'income';
+  let slipFile = null;
+  let slipBase64 = null;
+
+  // ---------- init ----------
+  els.date.valueAsDate = new Date();
+  if (!WEB_APP_URL) {
+    els.notice.classList.add('show');
+    els.submitBtn.disabled = true;
+  } else {
+    els.docId.textContent = 'SHEET-LINK · เชื่อมต่อแล้ว';
+    loadRecords();
+  }
+
+  // ---------- segmented type toggle ----------
+  els.btnIncome.addEventListener('click', () => setType('income'));
+  els.btnExpense.addEventListener('click', () => setType('expense'));
+  function setType(type) {
+    entryType = type;
+    els.btnIncome.classList.toggle('active', type === 'income');
+    els.btnExpense.classList.toggle('active', type === 'expense');
+  }
+
+  // ---------- file handling ----------
+  els.dropZone.addEventListener('click', () => els.fileInput.click());
+  els.fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    slipFile = file;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result; // data:mime;base64,xxxx
+      slipBase64 = result.split(',')[1];
+      els.previewImg.src = result;
+      els.previewName.textContent = file.name;
+      els.previewBox.classList.add('show');
+    };
+    reader.readAsDataURL(file);
+  });
+  els.removeSlip.addEventListener('click', () => {
+    slipFile = null;
+    slipBase64 = null;
+    els.fileInput.value = '';
+    els.previewBox.classList.remove('show');
+  });
+
+  // ---------- submit ----------
+  els.form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!WEB_APP_URL) return;
+
+    const amountVal = parseFloat(els.amount.value || '0');
+    if (!els.item.value.trim() || !amountVal) {
+      setStatus('กรุณากรอกรายการและจำนวนเงินให้ครบถ้วน', 'err');
+      return;
+    }
+
+    const payload = {
+      date: els.date.value,
+      item: els.item.value.trim(),
+      income: entryType === 'income' ? amountVal : '',
+      expense: entryType === 'expense' ? amountVal : '',
+    };
+    if (slipFile && slipBase64) {
+      payload.imageBase64 = slipBase64;
+      payload.imageMimeType = slipFile.type;
+      payload.imageName = slipFile.name;
+    }
+
+    els.submitBtn.disabled = true;
+    setStatus('กำลังบันทึก...', '');
+
+    try {
+      await fetch(WEB_APP_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+      setStatus('บันทึกรายการเรียบร้อย', 'ok');
+      showStamp();
+      resetForm();
+      loadRecords();
+    } catch (err) {
+      setStatus('บันทึกไม่สำเร็จ: ' + err.message, 'err');
+    } finally {
+      els.submitBtn.disabled = false;
+    }
+  });
+
+  function resetForm() {
+    els.item.value = '';
+    els.amount.value = '';
+    slipFile = null;
+    slipBase64 = null;
+    els.fileInput.value = '';
+    els.previewBox.classList.remove('show');
+    els.date.valueAsDate = new Date();
+  }
+
+  function setStatus(text, kind) {
+    els.statusLine.textContent = text;
+    els.statusLine.className = 'status-line' + (kind ? ' ' + kind : '');
+  }
+
+  function showStamp() {
+    els.stampToast.classList.add('show');
+    setTimeout(() => els.stampToast.classList.remove('show'), 1400);
+  }
+
+  // ---------- load + render records ----------
+  els.refreshBtn.addEventListener('click', loadRecords);
+
+  async function loadRecords() {
+    if (!WEB_APP_URL) return;
+    try {
+      const res = await fetch(WEB_APP_URL, { method: 'GET' });
+      const data = await res.json();
+      if (data.status !== 'ok') throw new Error(data.message || 'โหลดข้อมูลไม่สำเร็จ');
+      renderRecords(data.records || []);
+    } catch (err) {
+      setStatus('โหลดประวัติไม่สำเร็จ: ' + err.message, 'err');
+    }
+  }
+
+  function renderRecords(records) {
+    let totalIncome = 0, totalExpense = 0;
+    records.forEach(r => {
+      totalIncome += Number(r.income) || 0;
+      totalExpense += Number(r.expense) || 0;
+    });
+    els.sumIncome.textContent = formatBaht(totalIncome);
+    els.sumExpense.textContent = formatBaht(totalExpense);
+    els.sumBalance.textContent = formatBaht(totalIncome - totalExpense);
+
+    if (!records.length) {
+      els.recordsBody.innerHTML = '<tr class="empty-row"><td colspan="5">ยังไม่มีข้อมูล</td></tr>';
+      return;
+    }
+
+    const sorted = [...records].sort((a, b) => (a.date < b.date ? 1 : -1));
+    els.recordsBody.innerHTML = sorted.map(r => `
+      <tr>
+        <td>${escapeHtml(r.date || '')}</td>
+        <td>${escapeHtml(r.item || '')}</td>
+        <td class="amt income">${r.income ? formatBaht(r.income) : ''}</td>
+        <td class="amt expense">${r.expense ? formatBaht(r.expense) : ''}</td>
+        <td class="slip">${r.imageUrl ? `<a href="${escapeAttr(r.imageUrl)}" target="_blank" rel="noopener">📎 ดูสลิป</a>` : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function formatBaht(n) {
+    return '฿' + Number(n).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+</script>
+
+</body>
+</html>
