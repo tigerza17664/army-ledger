@@ -4,24 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>บันทึกรายรับ-รายจ่ายกองกำลัง</title>
+<link rel="icon" type="image/png" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="บันทึกกองกำลัง">
+<meta name="theme-color" content="#0B0B0B">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --field-dark:#232A1C;
-    --field-mid:#3C4A2A;
-    --field-olive:#5B6B3E;
-    --sage:#7E9A5C;
-    --khaki:#B9AE82;
+    --field-dark:#0B0B0B;
+    --field-mid:#1C1A12;
+    --field-olive:#8A6E1E;
+    --sage:#C9A227;
+    --khaki:#C9A227;
     --paper:#F2ECDA;
     --paper-soft:#E8E0C8;
     --ink:#211D14;
     --ink-soft:#5C5746;
-    --gold:#B6892F;
-    --stamp-red:#8E3327;
+    --gold:#D4AF37;
+    --stamp-red:#9A2A2A;
     --line:#C7BC97;
     --radius:6px;
-    --shadow:0 10px 24px rgba(20,22,12,0.28);
+    --shadow:0 10px 24px rgba(0,0,0,0.45);
   }
 
   *{ box-sizing:border-box; }
@@ -30,7 +36,7 @@
     margin:0;
     font-family:'Sarabun',sans-serif;
     background:
-      radial-gradient(ellipse at top, #303a21 0%, var(--field-dark) 55%, #181d12 100%);
+      radial-gradient(ellipse at top, #1A1812 0%, var(--field-dark) 55%, #000000 100%);
     color:var(--paper);
     min-height:100vh;
     padding:28px 16px 60px;
@@ -44,9 +50,9 @@
     align-items:center;
     gap:18px;
     padding:22px 26px;
-    border:1px solid rgba(182,137,47,0.45);
+    border:1px solid rgba(212,175,55,0.5);
     border-radius:var(--radius);
-    background:linear-gradient(180deg, rgba(60,74,42,0.55), rgba(35,42,28,0.55));
+    background:linear-gradient(180deg, rgba(28,26,18,0.85), rgba(8,8,8,0.85));
     box-shadow:var(--shadow);
     position:relative;
     overflow:hidden;
@@ -54,25 +60,23 @@
   .letterhead::before{
     content:"";
     position:absolute; inset:0;
-    background-image:repeating-linear-gradient(135deg, rgba(255,255,255,0.025) 0 2px, transparent 2px 14px);
+    background-image:repeating-linear-gradient(135deg, rgba(212,175,55,0.04) 0 2px, transparent 2px 14px);
     pointer-events:none;
   }
   .seal{
     flex:0 0 auto;
-    width:62px; height:62px;
+    width:66px; height:66px;
     border-radius:50%;
-    border:2px solid var(--gold);
     display:flex; align-items:center; justify-content:center;
     position:relative;
-    background:radial-gradient(circle at 35% 30%, #4a5a30, #232a1c 75%);
+    overflow:hidden;
+    background:radial-gradient(circle at 35% 30%, #1c1a12, #000 75%);
+    box-shadow:0 0 0 2px var(--gold), 0 0 10px rgba(212,175,55,0.35);
   }
-  .seal::before{
-    content:"";
-    position:absolute; inset:6px;
-    border:1px dashed rgba(182,137,47,0.7);
-    border-radius:50%;
+  .seal img{
+    width:100%; height:100%;
+    object-fit:cover;
   }
-  .seal-star{ color:var(--gold); font-size:22px; line-height:1; }
   .letterhead-text{ position:relative; z-index:1; }
   .eyebrow{
     font-family:'JetBrains Mono',monospace;
@@ -385,7 +389,7 @@
 <div class="wrap">
 
   <div class="letterhead">
-    <div class="seal"><span class="seal-star">★</span></div>
+    <div class="seal"><img src="icon.png" alt="ตราหน่วย"></div>
     <div class="letterhead-text">
       <div class="eyebrow">บันทึกการเงินภาคสนาม · FIELD LEDGER</div>
       <h1>บันทึกรายรับ-รายจ่ายกองกำลัง</h1>
