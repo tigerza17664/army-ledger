@@ -297,7 +297,7 @@
   table{
     width:100%;
     border-collapse:collapse;
-    font-size:14px;
+    font-size:15.5px;
   }
   thead th{
     text-align:left;
@@ -319,6 +319,7 @@
   td.amt{ font-family:'JetBrains Mono',monospace; text-align:right; white-space:nowrap; }
   td.amt.income{ color:#3F5A2A; font-weight:600; }
   td.amt.expense{ color:var(--stamp-red); font-weight:600; }
+  td.amt.balance{ color:var(--gold); font-weight:700; }
   td.slip a{
     display:inline-flex; align-items:center; gap:4px;
     color:var(--field-olive); font-size:12.5px; text-decoration:none;
@@ -481,11 +482,12 @@
               <th>รายการ</th>
               <th style="text-align:right;">รายรับ</th>
               <th style="text-align:right;">รายจ่าย</th>
+              <th style="text-align:right;">คงเหลือ</th>
               <th>สลิป</th>
             </tr>
           </thead>
           <tbody id="recordsBody">
-            <tr class="empty-row"><td colspan="5">ยังไม่มีข้อมูล</td></tr>
+            <tr class="empty-row"><td colspan="6">ยังไม่มีข้อมูล</td></tr>
           </tbody>
         </table>
       </div>
@@ -501,7 +503,7 @@
   // ====================================================================
   // ตั้งค่าการเชื่อมต่อ: นำ Web App URL จาก Google Apps Script มาวางที่นี่
   // ====================================================================
-  const WEB_APP_URL = ""; // <-- วางลิงก์ Web App ของ Apps Script ตรงนี้
+  const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzhO5kTHyK4yh67vejh5HGG03qTY82927_DAKTuiWSdjD9If2gbwEJSIuZYO-GzuBxq/exec"; // <-- วางลิงก์ Web App ของ Apps Script ตรงนี้
   // ====================================================================
 
   const els = {
@@ -675,6 +677,7 @@
         <td>${escapeHtml(r.item || '')}</td>
         <td class="amt income">${r.income ? formatBaht(r.income) : ''}</td>
         <td class="amt expense">${r.expense ? formatBaht(r.expense) : ''}</td>
+        <td class="amt balance">${r.balance !== undefined && r.balance !== '' ? formatBaht(r.balance) : ''}</td>
         <td class="slip">${r.imageUrl ? `<a href="${escapeAttr(r.imageUrl)}" target="_blank" rel="noopener">📎 ดูสลิป</a>` : '—'}</td>
       </tr>
     `).join('');
